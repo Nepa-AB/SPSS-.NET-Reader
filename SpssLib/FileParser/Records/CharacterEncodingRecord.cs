@@ -11,8 +11,8 @@ namespace SpssLib.FileParser.Records
         public override int SubType => InfoRecordType.CharacterEncoding;
 
         public string Name { get; private set; }
-        
-        public Encoding Encoding { get; private set; }
+
+        //public Encoding Encoding { get; private set; }
 
         internal CharacterEncodingRecord()
         {}
@@ -48,7 +48,7 @@ namespace SpssLib.FileParser.Records
             Name = Encoding.ASCII.GetString(nameBytes);
             Encoding = GetEncoding(Name);
         }
-        
+
         /// <summary>
         /// Gets the encoding, by trying to guess it from the string.
         /// </summary>
@@ -77,20 +77,18 @@ namespace SpssLib.FileParser.Records
             }
             catch (ArgumentException)
             {}
-            
+
             // Try to get encoding parsing codepage
             int cp;
             if (int.TryParse(Regex.Match(strEncoding, @"\d+").Value, out cp))
             {
-                info = encInfo.SingleOrDefault(ei => ei.CodePage == cp);
-                if (info != null)
-                    return info.GetEncoding();
+                return CodePagesEncodingProvider.Instance.GetEncoding(cp);
             }
-            
+
             if (strEncoding.Equals("windows-31j", StringComparison.InvariantCultureIgnoreCase))
             {
                 // 932 - Japanese (Shift-JIS)
-                return Encoding.GetEncoding(932); 
+                return Encoding.GetEncoding(932);
             }
 
             throw new SpssFileFormatException("Encoding not recognized: " + strEncoding);

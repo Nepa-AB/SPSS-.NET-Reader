@@ -65,6 +65,10 @@ namespace SpssLib.FileParser.Records
                         {
                             return Encoding.GetEncoding(CharacterCode);
                         }
+                        catch (NotSupportedException)
+                        {
+                            return CodePagesEncodingProvider.Instance.GetEncoding(CharacterCode);
+                        }
                         catch (ArgumentException ex)
                         {
                             throw new NotSupportedException("SPSS machine info record character code not suported: " + CharacterCode, ex);
@@ -103,7 +107,7 @@ namespace SpssLib.FileParser.Records
             FloatingPointRepresentation = reader.ReadInt32();
             CompressionCode = reader.ReadInt32();
             Endianness = reader.ReadInt32();
-            CharacterCode = reader.ReadInt32(); 
+            CharacterCode = reader.ReadInt32();
         }
     }
 }

@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Cone;
 using SpssLib.DataReader;
 using SpssLib.SpssDataset;
 
 namespace Test.SpssLib
 {
-    [TestClass]
+    [Describe(typeof(SpssWriter))]
     public class TestSpssWriter
     {
-        [TestMethod]
         public void TestWriteNumbers()
         {
             var filename = @"testWriteNumbers.sav";
@@ -71,11 +70,11 @@ namespace Test.SpssLib
             int rowCount;
             ReadFile(filename, out varCount, out rowCount);
 
-            Assert.AreEqual(varCount, 2, "Variable count does not match");
-            Assert.AreEqual(rowCount, 2, "Rows count does not match");
+            Check.That(
+                () => varCount == 2, // "Variable count does not match"
+                () => rowCount == 2); // "Rows count does not match"
         }
 
-        [TestMethod]
         public void TestWriteString()
         {
             var filename = @"testWriteString.sav";
@@ -185,12 +184,12 @@ namespace Test.SpssLib
             int rowCount;
             ReadFile(filename, out varCount, out rowCount);
 
-            Assert.AreEqual(varCount, 4, "Variable count does not match");
-            Assert.AreEqual(rowCount, 3, "Rows count does not match");
+            Check.That(
+                () => varCount == 4, // "Variable count does not match"
+                () => rowCount == 3); // "Rows count does not match"
         }
 
 
-        [TestMethod]
         public void TestWriteLongWeirdString()
         {
             var filename = @"testTestWriteLongWeirdString.sav";
@@ -291,54 +290,59 @@ namespace Test.SpssLib
             int rowCount;
             ReadFile(filename, out varCount, out rowCount);
 
-            Assert.AreEqual(varCount, 4, "Variable count does not match");
-            Assert.AreEqual(rowCount, 3, "Rows count does not match");
+            Check.That(
+                () => varCount == 4, // "Variable count does not match"
+                () => rowCount == 3); // "Rows count does not match"
         }
 
-        [ExpectedException(typeof (ArgumentNullException))]
-        [TestMethod]
         public void TestNullVarnameException()
         {
-            var filename = @"thisFileShouldNotExist.sav";
+            Action op = () => {
+                var filename = @"thisFileShouldNotExist.sav";
 
-            var variables = new List<Variable>
-                            {
-                                new Variable(null)
-                            };
+                var variables = new List<Variable>
+                                {
+                                    new Variable(null)
+                                };
 
-            using (FileStream fileStream = new FileStream(filename, FileMode.Create, FileAccess.Write))
-            {
-                using (new SpssWriter(fileStream, variables))
+                using (FileStream fileStream = new FileStream(filename, FileMode.Create, FileAccess.Write))
                 {
+                    using (new SpssWriter(fileStream, variables))
+                    {
+                    }
                 }
-            }
+            };
+
+
+            Check.Exception<ArgumentException>(() => op());
         }
 
-        [ExpectedException(typeof (ArgumentException))]
-        [TestMethod]
         public void TestNoVarnameException()
         {
-            var filename = @"emptyErrorFile.sav";
+            Action op = () => {
+                var filename = @"emptyErrorFile.sav";
 
-            var variables = new List<Variable>
-                            {
-#pragma warning disable 618
-                                new Variable()
-#pragma warning restore 618
-                            };
+                var variables = new List<Variable>
+                                {
+    #pragma warning disable 618
+                                    new Variable()
+    #pragma warning restore 618
+                                };
 
-            using (FileStream fileStream = new FileStream(filename, FileMode.Create, FileAccess.Write))
-            {
-                using (new SpssWriter(fileStream, variables))
+                using (FileStream fileStream = new FileStream(filename, FileMode.Create, FileAccess.Write))
                 {
+                    using (new SpssWriter(fileStream, variables))
+                    {
+                    }
                 }
-            }
+            };
+
+            Check.Exception<ArgumentException>(() => op());
         }
 
-        [TestMethod]
         public void TestWriteDoubleLongStringVar()
         {
-            var filename = @"c:\temp\testWriteDoubleLongString.sav";
+            var filename = @"testWriteDoubleLongString.sav";
 
             using (FileStream fileStream = new FileStream(filename, FileMode.Create, FileAccess.Write))
             {
@@ -368,7 +372,7 @@ namespace Test.SpssLib
                                      Type = DataType.Text,
                                      Width = 50,
                                      TextWidth = 5000
-                                 };                
+                                 };
 
                 var var4 = new Variable("stringvar_04")
                 {
